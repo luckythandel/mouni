@@ -1,3 +1,5 @@
 configparser
 checksumdir
 pycryptodome
+py_console
+argparse

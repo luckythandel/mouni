@@ -46,7 +46,7 @@ class Dump:
         # under construction....
         elif (os.name == "nt"):
             print("under construction....")
-        return 0;
+        return 0
 
     def retriveHistory(self, storage_file): # not working...
         if(os.name == "posix"):

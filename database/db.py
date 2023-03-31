@@ -1,58 +1,45 @@
 # UTF-8 encoding
-import sqlite3
-import pickle
-from random import choices
-from os import getcwd
-from string import ascii_letters 
+import json
+
+class LOG:
+    def __init__(self, checksum:str, len_passwords: int, len_cookies: int, len_history: int):
+        fd = open('logs.mouni', 'w+')
+        temp = 'profile checksum: %s\n'%(checksum)
+        temp+="  total passwords: %s\n"%(len_passwords)
+        temp+="  total cookies: %s\n"%(len_cookies)
+        temp+="  total history links: %s\n"%(len_history)
+        fd.write(temp)
 
 class DB:
-    
-    history = dict # url : timestamp
-    password = dict # url : password
-    
-    def saveInFile(self, obj):
-        cwd = getcwd()
-        if('../' not in cwd):
-            filename = ''.join(choices(ascii_letters, k=10))+".mouni"
-            try:
-                fd = open(filename, 'wb')
-                pickle_obj = pickle.dump(obj, fd, protocol=None)
-                fd.close()
-            except:
-                return -1
-    
-    def extract_from_file(self, fd):
+
+    passwords = {}
+    history = {}
+    cookies = {}
+    checksum = ""
+
+    def __init__(self, checksum: str, cookies: dict, passwords: dict, history: dict) -> None:
+        self.cookies = cookies
+        self.history = history
+        self.passwords = passwords
+        self.checksum = checksum
+        self.createDB(checksum)
+        log =   LOG(checksum,
+                len(passwords),
+                len(cookies),
+                len(history))
+
+    def createDB(self, checksum: str):
+        all_dump = {
+                    "passwords": self.passwords,
+                    "history": self.history,
+                    "cookies": self.cookies
+                    }
         try:
-            _pickle = pickle.load(fd)
-            return _pickle
-        except:
-            print('something went wrong!!')
+            all_json_dump = json.dumps(all_dump)
+            filename = 'obj_fd/'+checksum+'_ape.json'
+            fd = open(filename, 'w')
+            fd.write(all_json_dump)
+            fd.close()
+        except Exception as e:
+            print("R/W error with database:", e)
 
-    def retrive_passwds(self):
-        pass
-
-    def store_passwds(self, storage_file):
-        pass
-    
-    def store_history(self, storage_file):
-        try:
-            connection = sqlite3.connect(storage_file)
-            cur = connection.cursor()
-            cur.execute('SELECT origin,last_access_time,accessed FROM origin')
-            result = cur.fetchall()
-            for tup in result:
-                self.history.update({tup[0]:tup[1:]})
-            self.saveInFile(self.history)
-        except:
-            pass
-        pass
-    
-    def retrive_history(self, fd):
-        print(self.extract_from_file(fd))
-
-    def store_cookies(self):
-        pass
-
-    def retrive_cookies(self):
-        pass
-    

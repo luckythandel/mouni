@@ -1,7 +1,7 @@
 #/bin/env python3
 from py_console import console
 from browsers.firefox import acquisition
-from database import db
+from database.db import DB 
 import argparse
 from checksumdir import dirhash
 from os.path import isfile, isdir
@@ -21,9 +21,11 @@ def checksumPath(path: str) -> str:
 
 def view_json(filename):
     try:
-        json_obj = json.load(filename)
+        json_obj = json.load(open(filename))
+        print("sex")
         # retrive Passwords, History, Cookies in a beautiful synthx
-        
+        json_pretty = json.dumps(json_obj, indent=2)
+        print(json_pretty)
     except Exception as e:
         print('JSON DB doesn\'t exist')
         pass
@@ -48,39 +50,27 @@ def interactive():
         if(int(browser) == 1):
             profile = input('profile: ')
             if(isdir(profile)):
+                if(not profile.endswith('/')):
+                    profile+='/'
                 checksum = checksumPath(profile)
-                fullpath = "database/obj_fd/"+checksum+'.json'
+                fullpath = "database/obj_fd/"+checksum+'_ape.json'
                 if(isfile(fullpath)):
                    console.warn('the profile has been analyzed already!')
                    view_json(fullpath)
                 else:
                     console.success('Starting analyzing...')
-                    while(1):
-                        print('----acquisition----')
-                        print('1. History\n2.Passwords\n3.Cookies\n4.Exit')
-                        acq = int(input('>'))
-                        if(acq == 1):
-                            dump.retriveHistory(profile)
-                            HISTORY=1
-                            print('added to DB...')
-                        elif(acq == 2):
-                            dump.retrivePasswords(profile)
-                            PASSWORDS=1
-                            print('added to DB...')
-                        elif(acq == 3):
-                            dump.retriveCookies(profile)
-                            COOKIES=1
-                            print('added to DB...')
-                        else:
-                            break
+                    print('----acquisition----')
+                    dump.retriveCookies(profile)
+                    dump.retriveHistory(profile)
+                    dump.retrivePasswords(profile)
+                    console.log("Saving to database..")
                     view_ans = input('Do you want to see the mouni DB(Y/N)')
-                    while(1):
-                        if(view_ans.lower() == 'Y'):
-                            pass
-                        elif(view_ans.lower() == 'N'):
-                            print('Going back...')
-                            break
-
+                    if(view_ans.lower() == 'y'):
+                        console.success('JSON database...')
+                        # creating database under database/obj_df/
+                        _db = DB(checksum, dump.cookies, dump.passwords, dump.history)
+                        fullpath = "database/obj_fd/"+checksum+'_ape.json'
+                        view_json(fullpath)
             else:
                 print("no such profile")
                 
@@ -94,3 +84,5 @@ def main():
     # view or acquisition
 
     pass
+
+interactive()

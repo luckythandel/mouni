@@ -35,8 +35,9 @@ class DB:
                     "cookies": self.cookies
                     }
         try:
-            all_json_dump = json.dumps(all_dump)
-            filename = 'obj_fd/'+checksum+'_ape.json'
+            # print(all_dump)
+            all_json_dump = json.dumps(all_dump, indent=2)
+            filename = 'database/obj_fd/'+checksum+'_ape.json'
             fd = open(filename, 'w')
             fd.write(all_json_dump)
             fd.close()

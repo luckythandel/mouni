@@ -2,7 +2,7 @@ import subprocess
 import os
 from configparser import ConfigParser
 from checksumdir import dirhash
-#from firepwd.firepwd import decryptItAll
+from browsers.firefox.firepwd.firepwd import decryptItAll
 import sqlite3
 
 class Dump:
@@ -11,6 +11,17 @@ class Dump:
     history = {}
     passwords = {}
     cookies = {}
+    cookies_path = []
+    storage_path = []
+
+    def gen_path(self, profiles):
+        for name, profile_list in profiles.items():
+            path = profile_list[0]
+            #cookies
+            if(not path.endswith('/')):
+                path+='/'
+            self.cookies_path.append(path+'cookies.sqlite')
+            self.storage_path.append(path+'storage.sqlite')
 
     def __init__(self, *profiles):
         if(profiles):
@@ -51,6 +62,9 @@ class Dump:
     def retriveHistory(self, storage_file): # not working...
         if(os.name == "posix"):
             try:
+                if(not storage_file.endswith('/')):
+                    storage_file+='/'
+                storage_file+='storage.sqlite'
                 connection = sqlite3.connect(storage_file)
                 cur = connection.cursor()
                 cur.execute('SELECT origin,last_access_time,accessed FROM origin')
@@ -71,6 +85,8 @@ class Dump:
     def retriveCookies(self, cookies_path):
         if(os.name == "posix"):
             try:
+                if(not cookies_path.endswith('/')):
+                    cookies_path+='/'
                 connection = sqlite3.connect(cookies_path+'cookies.sqlite')
                 cur = connection.cursor()
                 cur.execute('SELECT name,value,host FROM moz_cookies')
